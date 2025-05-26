@@ -3,12 +3,18 @@ import pandas as pd
 import plotly.express as px
 import folium
 from streamlit_folium import st_folium
+import os
 
 # 데이터 불러오기
 @st.cache_data
 def load_data():
-    df = pd.read_csv("subway_congestion.csv")
-    return df
+    file_path = os.path.join(os.getcwd(), "subway_congestion.csv")
+    
+    if not os.path.exists(file_path):
+        st.error(f"❌ '{file_path}' 파일을 찾을 수 없습니다. 파일 경로를 확인하세요.")
+        return pd.DataFrame()  # 빈 데이터 반환
+    
+    return pd.read_csv(file_path)
 
 df = load_data()
 
@@ -66,6 +72,8 @@ if selected_station_1 and selected_station_2:
             popup=f"{selected_station_1} ({selected_line_1}호선)", 
             icon=folium.Icon(color="red")
         ).add_to(m)
+    else:
+        st.warning(f"🚨 '{selected_station_1}' 위치 정보가 없습니다.")
 
     # 두 번째 역 마커 추가 (파랑)
     if selected_station_2 in station_locations:
@@ -74,6 +82,8 @@ if selected_station_1 and selected_station_2:
             popup=f"{selected_station_2} ({selected_line_2}호선)", 
             icon=folium.Icon(color="blue")
         ).add_to(m)
+    else:
+        st.warning(f"🚨 '{selected_station_2}' 위치 정보가 없습니다.")
 
     # 지도 출력
     st_folium(m, width=800, height=500)

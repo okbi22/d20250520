@@ -44,15 +44,20 @@ if selected_station1 and selected_station2:
     melted2 = plot_data2.melt(id_vars=['출발역'], value_vars=time_columns, 
                               var_name='시간', value_name='혼잡도')
 
-    # 그래프 생성
-    fig1 = px.bar(melted1, x='시간', y='혼잡도', color_discrete_sequence=['red'],
-                  title=f"{selected_station1} 혼잡도", labels={"혼잡도": "혼잡도 (비율)", "시간": "시간대"})
+    # 두 개의 데이터 합치기
+    melted1['구분'] = f"{selected_station1} ({selected_line1})"
+    melted2['구분'] = f"{selected_station2} ({selected_line2})"
     
-    fig2 = px.bar(melted2, x='시간', y='혼잡도', color_discrete_sequence=['blue'],
-                  title=f"{selected_station2} 혼잡도", labels={"혼잡도": "혼잡도 (비율)", "시간": "시간대"})
+    combined_data = pd.concat([melted1, melted2])
 
-    # Streamlit에 두 개의 그래프 표시
-    st.plotly_chart(fig1, use_container_width=True)
-    st.plotly_chart(fig2, use_container_width=True)
+    # 막대 그래프 생성 (나란히 배치)
+    fig = px.bar(combined_data, x='시간', y='혼잡도', color='구분', barmode='group',
+                 title=f"{selected_station1} vs {selected_station2} 혼잡도 비교",
+                 labels={"혼잡도": "혼잡도 (비율)", "시간": "시간대"},
+                 color_discrete_map={f"{selected_station1} ({selected_line1})": "red",
+                                      f"{selected_station2} ({selected_line2})": "blue"})
+
+    # Streamlit에 그래프 표시
+    st.plotly_chart(fig, use_container_width=True)
 else:
     st.warning("각 호선에서 하나씩 출발역을 선택하세요!")
